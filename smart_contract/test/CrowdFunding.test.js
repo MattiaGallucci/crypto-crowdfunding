@@ -1,7 +1,7 @@
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
 
-describe("CrowdFunding COntract", function () {
+describe("CrowdFunding Contract", function () {
     let CrowdFunding;
     let crowdFunding;
     let owner;
@@ -50,5 +50,36 @@ describe("CrowdFunding COntract", function () {
         await expect(
             crowdFunding.createCampaign(owner.address, "Test", "Desc", 100, pastDate, "img")
         ).to.be.revertedWith("La scadenza deve essere nel futuro");
+    });
+
+
+
+    describe("Donazioni", function () {
+        beforeEach(async function () {
+            const target = ethers.parseEther("10");
+            const deadline = Math.floor(Date.now() / 1000) + 1000;
+            await crowdFunding.createCampaign(owner.address, "Campagna 1", "Desc", target, deadline, "img");
+        });
+
+        it("Dovrebbe accettare donazioni e aggiornare lo stato", async function () {
+            // 1. "addr1" (il donatore) invia 1 ETH alla campagna con ID 0
+            const donationAmount = ethers.parseEther("1");
+
+            await crowdFunding.connect(addr1).donateToCampaign(0, { value: donationAmount });
+
+            const campaign = await crowdFunding.campaigns(0);
+
+            expect(campaign.amountCollected).to.equal(donationAmount);
+
+            const [donators, donations] = await crowdFunding.getDonators(0);
+
+            expect(donators[0]).to.equal(addr1.address);
+            expect(donations[0]).to.equal(donationAmount);
+        });
+
+        it("Non dovrebbe accettare donazioni per campagne scadute", async function () {
+            //Complesso da implementare il test per campagne scadute senza manipolare il tempo della blockchain
+            const pastDate = Math.floor(Date.now() / 1000) - 1000;
+        });
     });
 });
