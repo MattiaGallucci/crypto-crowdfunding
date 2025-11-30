@@ -3,23 +3,79 @@ import { Web3Context } from './context/Web3Context';
 import CreateCampaign from './CreateCampaign';
 
 const App = () => {
-  const { connectWallet, currentAccount } = useContext(Web3Context);  
+  const { connectWallet, currentAccount, campaigns, isLoading } = useContext(Web3Context);
 
   return (
-    <div className="app" style={{ padding: '20px', fontFamily: 'Arial' }}>
-      <h1>Crypto Crowdfunding</h1>
+    <div style={{ padding: '20px', fontFamily: 'Arial', maxWidth: '1200px', margin: '0 auto' }}>
       
-      {!currentAccount ? (
-        <button onClick={connectWallet}>Connetti MetaMask</button>
+      <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
+        <h1>Crypto Crowdfunding</h1>
+        {!currentAccount ? (
+          <button onClick={connectWallet} style={btnStyle}>Connetti Wallet</button>
+        ) : (
+          <div style={{ background: '#e6fffa', padding: '8px 16px', borderRadius: '20px', border: '1px solid #38b2ac' }}>
+            {currentAccount.slice(0,6)}...{currentAccount.slice(-4)}
+          </div>
+        )}
+      </header>
+
+      {currentAccount && (
+        <div style={{ marginBottom: '40px', padding: '20px', border: '1px solid #eee', borderRadius: '10px' }}>
+          <CreateCampaign />
+        </div>
+      )}
+
+      <h2>Campagne Attive ({campaigns.length})</h2>
+      
+      {isLoading ? (
+        <p>Caricamento dalla Blockchain...</p>
       ) : (
-        <div>
-            <p>Connesso: {currentAccount}</p>
-            <hr />
-            <CreateCampaign />
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
+          {campaigns.length > 0 ? campaigns.map((camp) => (
+            <div key={camp.pId} style={cardStyle}>
+              <img src={camp.image} alt={camp.title} style={{ width: '100%', height: '150px', objectFit: 'cover', borderRadius: '5px' }} />
+              
+              <div style={{ padding: '10px' }}>
+                <h3>{camp.title}</h3>
+                <p style={{ color: '#666', fontSize: '0.9rem' }}>{camp.description}</p>
+                
+                <div style={{ marginTop: '10px' }}>
+                  <p><strong>Target:</strong> {camp.target} ETH</p>
+                  <p><strong>Raccolti:</strong> {camp.amountCollected} ETH</p>
+                  <p style={{ fontSize: '0.8rem', color: '#888' }}>Scadenza: {new Date(camp.deadline * 1000).toLocaleDateString()}</p>
+                </div>
+                
+                <button style={{ ...btnStyle, width: '100%', marginTop: '10px', backgroundColor: '#6c5ce7' }}>
+                   Dettagli & Dona
+                </button>
+              </div>
+            </div>
+          )) : (
+            <p>Nessuna campagna trovata. Creane una tu!</p>
+          )}
         </div>
       )}
     </div>
   );
 }
+
+
+const btnStyle = {
+  padding: '10px 20px', 
+  backgroundColor: '#007bff', 
+  color: 'white', 
+  border: 'none', 
+  borderRadius: '5px', 
+  cursor: 'pointer',
+  fontWeight: 'bold'
+};
+
+const cardStyle = {
+  border: '1px solid #ddd',
+  borderRadius: '10px',
+  overflow: 'hidden',
+  boxShadow: '0 2px 5px rgba(0,0,0,0.1)',
+  background: 'white'
+};
 
 export default App;

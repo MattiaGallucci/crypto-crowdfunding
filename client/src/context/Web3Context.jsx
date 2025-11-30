@@ -12,6 +12,9 @@ const { ethereum } = window;
 export const Web3Provider = ({ children }) => {
     const [currentAccount, setCurrentAccount] = useState("");
 
+    const [campaigns, setCampaigns] = useState([]);
+    const [isLoading, setIsLoading] = useState(false);
+
     // Funzione per ottenere l'istanza del contratto
     const getEthereumContract = () => {
         const provider = new ethers.providers.Web3Provider(ethereum);
@@ -52,12 +55,44 @@ export const Web3Provider = ({ children }) => {
         }
     }
 
+    const fetchCampaigns = async () => {
+        setIsLoading(true);
+        try {
+            const contract = getEthereumContract();
+            const data = await contract.getCampaigns();
+
+            const parsedCampaigns = data.map((campaign, i) => ({
+                owner: campaign.owner,
+                title: campaign.title,
+                description: campaign.description,
+                target: ethers.utils.formatEther(campaign.target.toString()),
+                deadline: campaign.deadline.toNumber(),
+                amountCollected: ethers.utils.formatEther(campaign.amountCollected.toString()),
+                image: campaign.image,
+                pId: i
+            }));
+
+            console.log("Campagne caricate:", parsedCampaigns);
+            setCampaigns(parsedCampaigns);
+        } catch (error) {
+            console.log("Errore nel caricamento delle campagne:", error);
+        }
+        setIsLoading(false);
+    };
+
     useEffect(() => {
-        checkIfWalletIsConnected();
-    }, []);
+        if(contractAddress) fetchCampaigns();
+    }, [currentAccount]);
 
     return (
-        <Web3Context.Provider value={{ currentAccount, connectWallet, getEthereumContract }}>
+        <Web3Context.Provider value={{ 
+            connectWallet, 
+            currentAccount, 
+            getEthereumContract,
+            campaigns,
+            fetchCampaigns,
+            isLoading 
+        }}>
             {children}
         </Web3Context.Provider>
     );
