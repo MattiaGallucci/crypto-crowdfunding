@@ -39,10 +39,13 @@ const CreateCampaign = () => {
 
         try {
             const res = await axios.post(url, data, {
-                'Content-Type': `multipart/form-data; boundary=${data._boundary}`,
-                'pinata_api_key': pinataApiKey,
-                'pinata_secret_api_key': pinataSecretApiKey
+                headers: {
+                    // Axios imposta automaticamente il boundary per FormData, 
+                    // noi dobbiamo solo aggiungere l'Authorization
+                    'Authorization': `Bearer ${pinataJWT}`
+                }
             });
+            console.log("Upload riuscito:", res.data);
             return `https://gateway.pinata.cloud/ipfs/${res.data.IpfsHash}`;
         } catch (error) {
             console.error('Errore uploading IPFS:', error);
@@ -76,7 +79,7 @@ const CreateCampaign = () => {
         try {
             const contract = getEthereumContract();
 
-            const transactin = await contract.CreateCampaign(
+            const transactin = await contract.createCampaign(
                 currentAccount,
                 title,
                 description,
