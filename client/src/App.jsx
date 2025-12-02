@@ -4,7 +4,7 @@ import CreateCampaign from './CreateCampaign';
 import FundModal from './FundModal';
 
 const App = () => {
-  const { connectWallet, currentAccount, campaigns, isLoading, withdraw, refund } = useContext(Web3Context);
+  const { connectWallet, currentAccount, campaigns, isLoading, withdraw, refund, currentTimestamp } = useContext(Web3Context);
   
   // Stato per gestire il modale
   const [selectedCampaign, setSelectedCampaign] = useState(null);
@@ -39,7 +39,7 @@ const App = () => {
     
     // Calcoli di stato per ogni card
     const isOwner = currentAccount && camp.owner === currentAccount.toLowerCase();
-    const isExpired = Date.now() / 1000 > camp.deadline;
+    const isExpired = currentTimestamp > camp.deadline;
     const targetReached = parseFloat(camp.amountCollected) >= parseFloat(camp.target);
     const hasDonated = currentAccount && camp.donators.includes(currentAccount.toLowerCase());
 

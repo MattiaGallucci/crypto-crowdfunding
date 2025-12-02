@@ -15,6 +15,8 @@ export const Web3Provider = ({ children }) => {
     const [campaigns, setCampaigns] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
 
+    const [currentTimestamp, setCurrentTimestamp] = useState(0);
+
     // Funzione per ottenere l'istanza del contratto
     const getEthereumContract = () => {
         const provider = new ethers.providers.Web3Provider(ethereum);
@@ -58,8 +60,13 @@ export const Web3Provider = ({ children }) => {
     const fetchCampaigns = async () => {
         setIsLoading(true);
         try {
+            const provider = new ethers.providers.Web3Provider(ethereum);
             const contract = getEthereumContract();
+
             const data = await contract.getCampaigns();
+
+            const block = await provider.getBlock('latest');
+            setCurrentTimestamp(block.timestamp);
 
             const parsedCampaigns = data.map((campaign, i) => ({
                 owner: campaign.owner.toLowerCase(),
@@ -147,7 +154,8 @@ export const Web3Provider = ({ children }) => {
             donate,
             withdraw,
             refund,
-            getEthereumContract
+            getEthereumContract,
+            currentTimestamp
         }}>
             {children}
         </Web3Context.Provider>
