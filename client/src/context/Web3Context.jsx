@@ -62,13 +62,14 @@ export const Web3Provider = ({ children }) => {
             const data = await contract.getCampaigns();
 
             const parsedCampaigns = data.map((campaign, i) => ({
-                owner: campaign.owner,
+                owner: campaign.owner.toLowerCase(),
                 title: campaign.title,
                 description: campaign.description,
                 target: ethers.utils.formatEther(campaign.target.toString()),
                 deadline: campaign.deadline.toNumber(),
                 amountCollected: ethers.utils.formatEther(campaign.amountCollected.toString()),
                 image: campaign.image,
+                donators: campaign.donators.map(d => d.toLowerCase()),
                 pId: i
             }));
 
@@ -104,6 +105,38 @@ export const Web3Provider = ({ children }) => {
         setIsLoading(false);
     }
 
+    // Funzione per il Creatore: Preleva i fondi
+    const withdraw = async (pId) => {
+        setIsLoading(true);
+        try {
+            const contract = getEthereumContract();
+            const transaction = await contract.withdrawFunds(pId);
+            await transaction.wait();
+            console.log("Prelievo effettuato con successo", transaction);
+
+            fetchCampaigns();
+        } catch (error) {
+            console.log("Errore durante il prelievo:", error);
+            alert("Errore durante il prelievo. Vedi console per dettagli.");
+        }
+        setIsLoading(false);
+    }
+
+    const refund = async (pId) => {
+        setIsLoading(true);
+        try {
+            const contract = getEthereumContract();
+            const transaction = await contract.refund(pId);
+            await transaction.wait();
+            console.log("Rimborso effettuato con successo", transaction);
+            fetchCampaigns();
+        } catch (error) {
+            console.log("Errore durante il rimborso:", error);
+            alert("Errore durante il rimborso. Vedi console per dettagli.");
+        }
+        setIsLoading(false);
+    }
+
     return (
         <Web3Context.Provider value={{ 
             connectWallet, 
@@ -111,7 +144,10 @@ export const Web3Provider = ({ children }) => {
             campaigns, 
             fetchCampaigns, 
             isLoading,
-            donate
+            donate,
+            withdraw,
+            refund,
+            getEthereumContract
         }}>
             {children}
         </Web3Context.Provider>
