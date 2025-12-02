@@ -3,7 +3,7 @@ import { ethers } from 'ethers';
 
 import CrowdFundingABI from './CrowdFunding.json';
 
-const contractAddress = "0x5fbdb2315678afecb367f032d93f642f64180aa3"; //Cambia ad ogni delpoy. Cambialo ad ogni deploy
+const contractAddress = "0x5fbdb2315678afecb367f032d93f642f64180aa3"; //Cambia ad ogni delpoy.
 
 export const Web3Context = createContext();
 
